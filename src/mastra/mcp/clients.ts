@@ -7,7 +7,7 @@ export async function getInstantDomainSearchTools() {
   if (!instantDomainSearchClient) {
     instantDomainSearchClient = await createMCPClient({
       transport: {
-        type: "sse",
+        type: "http",
         url: "https://instantdomainsearch.com/mcp/streamable-http",
       },
     });
@@ -21,7 +21,7 @@ export async function getDataGouvTools() {
   if (!dataGouvClient) {
     dataGouvClient = await createMCPClient({
       transport: {
-        type: "sse",
+        type: "http",
         url: "https://mcp.data.gouv.fr/mcp",
       },
     });

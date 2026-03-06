@@ -93,7 +93,7 @@ async function getMcpTools() {
   }
 
   try {
-    const gouvTools = await withTimeout(getDataGouvTools(), 10000, "data.gouv.fr MCP");
+    const gouvTools = await withTimeout(getDataGouvTools(), 30000, "data.gouv.fr MCP");
     Object.assign(results, gouvTools);
   } catch (e) {
     console.warn("Failed to connect to data.gouv.fr MCP:", e);

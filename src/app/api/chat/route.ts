@@ -102,26 +102,30 @@ async function getMcpTools() {
   return results;
 }
 
-let cachedMcpTools: Record<string, any> | null = null;
+// Start loading MCP tools eagerly at module load (non-blocking)
+const mcpToolsPromise = getMcpTools().then((tools) => {
+  console.log("[BrandCheck] MCP tools loaded:", Object.keys(tools));
+  return tools;
+}).catch((e) => {
+  console.warn("[BrandCheck] MCP tools failed to load:", e);
+  return {} as Record<string, any>;
+});
 
 export async function POST(req: Request) {
   const { messages } = await req.json();
-  const modelMessages = await convertToModelMessages(messages);
 
-  if (!cachedMcpTools) {
-    cachedMcpTools = await getMcpTools();
-    console.log(
-      "[BrandCheck] MCP tools loaded:",
-      Object.keys(cachedMcpTools)
-    );
-  }
+  // Wait for MCP tools only if they're not ready yet — but they load in parallel with the request
+  const [modelMessages, mcpTools] = await Promise.all([
+    convertToModelMessages(messages),
+    mcpToolsPromise,
+  ]);
 
   const result = streamText({
     model: anthropic("claude-haiku-4-5-20251001"),
     system: SYSTEM_PROMPT,
     messages: modelMessages,
     tools: {
-      ...cachedMcpTools,
+      ...mcpTools,
       domainCheck,
       rechercheEntreprises,
       linguisticCheck,

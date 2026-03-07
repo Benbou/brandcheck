@@ -22,10 +22,14 @@ Conversational brand name verification tool. Users describe their project via ch
 - `src/mcp/clients.ts` — MCP client connection:
   - Instant Domain Search (`instantdomainsearch.com/mcp/streamable-http`) — PRIMARY for domain checks. Tools: `search_domains`, `generate_domain_variations`, `check_domain_availability`
 - `src/prompts/brandcheck.ts` — System prompt for Haiku. MCP IDS = primary for domains (`domainCheck` = fallback). `inpiTrademarkCheck` for trademark verification.
-- `src/components/chat/` — Chat UI components (shadcn/ui based)
-- `src/components/ui/` — shadcn/ui primitives (button, badge, scroll-area, avatar)
+- `src/components/chat/` — Chat UI (ChatContainer with useChat)
+- `src/components/ai-elements/` — AI-specific UI components (tool display, reasoning, code blocks, etc.)
+- `src/components/ui/` — shadcn/ui primitives (button, badge, scroll-area, avatar, card, dialog, tabs, tooltip, etc.)
 - `src/app/globals.css` — Tailwind v4 + shadcn CSS variables + custom table styles
 - `src/lib/utils.ts` — `cn()` helper (clsx + tailwind-merge)
+- `src/lib/logger.ts` — Logging utility
+- `src/lib/tool-labels.ts` — Human-readable labels for tool names
+- `src/lib/tool-summary.ts` — Tool result summarization
 - `src/app/page.tsx` — Mounts `ChatContainer`
 
 ## UI Components

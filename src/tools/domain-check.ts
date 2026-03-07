@@ -1,19 +1,23 @@
 import { tool } from "ai";
 import { z } from "zod";
 
+/**
+ * DNS-based domain availability check via Google DNS.
+ * Used as local fallback when MCP Instant Domain Search is unavailable.
+ */
 export const domainCheck = tool({
   description:
-    "Check domain name availability for multiple TLDs (.com, .fr, .io) by attempting DNS resolution. Returns availability status for each domain.",
+    "Check domain name availability for .com, .fr and .io extensions using DNS lookup. Returns availability status for each TLD.",
   inputSchema: z.object({
     name: z
       .string()
-      .describe("The brand name to check (without TLD extension)"),
+      .describe("The brand name to check (without TLD, e.g. 'nombl')"),
   }),
   execute: async ({ name }) => {
     const cleanName = name.toLowerCase().replace(/[^a-z0-9-]/g, "");
     const tlds = ["com", "fr", "io"];
 
-    const results = await Promise.all(
+    const domains = await Promise.all(
       tlds.map(async (tld) => {
         const domain = `${cleanName}.${tld}`;
         try {
@@ -29,13 +33,6 @@ export const domainCheck = tool({
       })
     );
 
-    return {
-      name: cleanName,
-      domains: results.map((r) => ({
-        domain: r.domain,
-        tld: r.tld,
-        available: r.available,
-      })),
-    };
+    return { name: cleanName, domains };
   },
 });

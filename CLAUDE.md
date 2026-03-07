@@ -10,15 +10,18 @@ Conversational brand name verification tool. Users describe their project via ch
 
 ## Key Files
 
-- `src/app/api/chat/route.ts` — Main API route. Uses `streamText()` with local tools + MCP tools, `stopWhen: stepCountIs(15)` for multi-step tool calls. MCP connections have 10s timeout fallback.
-- `src/mastra/tools/` — Custom AI SDK tools (local fallbacks):
-  - `domain-check.ts` — DNS-based domain availability (.com, .fr, .io)
+- `src/app/api/chat/route.ts` — Main API route. Uses `streamText()` with local tools + MCP tools, `stopWhen: stepCountIs(15)` for multi-step tool calls. MCP tools loaded eagerly at module init; POST handler awaits them with 5s timeout to avoid race conditions.
+- `src/tools/` — Custom AI SDK tools (local):
+  - `domain-check.ts` — DNS-based domain availability (.com, .fr, .io) — fallback if MCP IDS unavailable
   - `recherche-entreprises.ts` — French company registry via `recherche-entreprises.api.gouv.fr`
   - `linguistic-check.ts` — Pronunciation heuristics, negative word detection (FR/EN/ES)
-  - `scoring.ts` — Composite score 0-100 based on all checks
-- `src/mastra/mcp/clients.ts` — MCP client connections:
-  - Instant Domain Search (`instantdomainsearch.com`) — real-time domain availability + alternative suggestions
-  - data.gouv.fr (`mcp.data.gouv.fr`) — INPI trademark database search
+  - `inpi-trademark-check.ts` — INPI official API trademark search with Nice class filtering and conflict analysis
+  - `scoring.ts` — Composite score 0-100 based on all checks (includes `trademarkRisk`)
+  - `social-check.ts` — Social media handle availability (Instagram, X, LinkedIn, TikTok)
+- `src/lib/inpi-client.ts` — INPI API client (`api-gateway.inpi.fr`). Cookie-based auth (XSRF + login), token caching, SolR query builder for trademark search.
+- `src/mcp/clients.ts` — MCP client connection:
+  - Instant Domain Search (`instantdomainsearch.com/mcp/streamable-http`) — PRIMARY for domain checks. Tools: `search_domains`, `generate_domain_variations`, `check_domain_availability`
+- `src/prompts/brandcheck.ts` — System prompt for Haiku. MCP IDS = primary for domains (`domainCheck` = fallback). `inpiTrademarkCheck` for trademark verification.
 - `src/components/chat/` — Chat UI components (shadcn/ui based)
 - `src/components/ui/` — shadcn/ui primitives (button, badge, scroll-area, avatar)
 - `src/app/globals.css` — Tailwind v4 + shadcn CSS variables + custom table styles
@@ -50,3 +53,5 @@ This project uses AI SDK v6 which has breaking changes from v4/v5:
 ## Environment
 
 - `ANTHROPIC_API_KEY` in `.env.local`
+- `INPI_USERNAME` in `.env.local` — INPI API account username
+- `INPI_PASSWORD` in `.env.local` — INPI API account password
